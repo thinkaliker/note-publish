@@ -10,7 +10,7 @@ const octokit = new ok.Octokit({ auth: process.env.GITHUB_AUTH });
 
 
 const app = express();
-const port = 58585
+const port = process.env.PORT || 58585
 app.use(bodyParser.json());
 
 
@@ -85,7 +85,7 @@ async function sendToGithub(filename, contents) {
 }
 
 
-app.post('/api', (req, res) => {
+app.post('/', (req, res) => {
     if (req.body['password'] === process.env.NOTABLE_PASSWORD) {
         const fileName = createFilename(req.body.md);
         // const fileName = createFile(req.body.md);
@@ -105,11 +105,11 @@ app.post('/api', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.end('Hello');
+    res.end('note-publish');
 })
 
 module.exports = app;
 
-// app.listen(port, '0.0.0.0', () => {
-//     console.log(`Listening at port ${port}`)
-// });
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Listening at port ${port}`)
+});
