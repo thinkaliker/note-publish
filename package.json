@@ -12,5 +12,8 @@
     "front-matter": "^4.0.2",
     "js-base64": "^3.7.2",
     "octokit": "^1.7.1"
+  },
+  "scripts": {
+    "build": "cd ."
   }
 }

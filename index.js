@@ -111,6 +111,10 @@ app.get('/', (req, res) => {
     res.end('note-publish');
 })
 
+app.get('/api', (req, res) => {
+    res.end('note-publish /api');
+})
+
 module.exports = app;
 
 // app.listen(port, '0.0.0.0', () => {
