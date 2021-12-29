@@ -1,0 +1,16 @@
+{
+  "name": "note-publish",
+  "version": "1.0.0",
+  "main": "main.js",
+  "repository": "git@github.com:thinkaliker/note-publish.git",
+  "author": "Adam <adam@thinkaliker.com>",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.19.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.2",
+    "front-matter": "^4.0.2",
+    "js-base64": "^3.7.2",
+    "octokit": "^1.7.1"
+  }
+}
