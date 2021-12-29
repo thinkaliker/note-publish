@@ -5,7 +5,7 @@ notable.app interceptor
 # setup
 - install yarn
 - yarn install
-- node main.js
+- node index.js
 
 # requirements
 - get a github personal access token and add the repo permission
