@@ -93,6 +93,9 @@ app.post('/', (req, res) => {
         const urlResponse = createResponse(newUrlString);
         sendToGithub(fileName, req.body.md);
         res.setHeader("Content-Type", "application/json");
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Headers', 'Accept');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         res.writeHead(200);
         res.end(urlResponse);
         console.log(`Sent response: ${urlResponse}`)
