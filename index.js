@@ -110,6 +110,6 @@ app.get('/', (req, res) => {
 
 module.exports = app;
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Listening at port ${port}`)
-});
+// app.listen(port, '0.0.0.0', () => {
+//     console.log(`Listening at port ${port}`)
+// });
