@@ -1,6 +1,7 @@
 const fm = require('front-matter');
 const ok = require('octokit');
-const Base64 = require("js-base64");
+const Base64 = require('js-base64');
+const Cors = require('cors');
 
 function createResponse(url) {
     let response = {}
@@ -40,7 +41,6 @@ async function checkSHA(octokit, path) {
         console.log(`Github returned error for ${path}, ignoring sha`);
         return '';
     }
-
 }
 
 async function sendToGithub(octokit, filename, contents) {
@@ -57,31 +57,51 @@ async function sendToGithub(octokit, filename, contents) {
             content: encodedContent,
             sha
         });
-        console.log(`GitHub returned ${res.status}, commit ${res.data.commit.sha}`);
+        console.log(`GitHub returned ${res.status}, new commit ${res.data.commit.sha}`);
     } catch (err) {
         console.error(err);
     }
 }
 
-export default async function handler(req, res) {
-    const octokit = new ok.Octokit({ auth: process.env.GITHUB_AUTH });
-
-    if (req.body['password'] === process.env.NOTABLE_PASSWORD) {
-        const fileName = createFilename(req.body.md);
-        const newUrlString = createUrl(req.body.md);
-        const urlResponse = createResponse(newUrlString);
-        await sendToGithub(octokit, fileName, req.body.md);
-        res.setHeader("Content-Type", "application/json");
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Headers', 'Accept');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.writeHead(200);
-        res.end(urlResponse);
-        console.log(`Sent response: ${urlResponse}`)
-    } else {
-        res.writeHead(401);
-        res.end('INVALID PASSWORD');
-        console.log('Invalid password provided')
-    }
+function runMiddleware(req, res, fn) {
+    return new Promise((resolve, reject) => {
+      fn(req, res, (result) => {
+        if (result instanceof Error) {
+          return reject(result)
+        }
+        return resolve(result)
+      })
+    })
   }
-  
+
+const handler = async (req, res) => {
+    const octokit = new ok.Octokit({ auth: process.env.GITHUB_AUTH });
+    const cors = Cors({
+        methods: ['GET', 'POST']
+    });
+
+    await runMiddleware(req, res, cors);
+
+    try {
+        if (req.body['password'] === process.env.NOTABLE_PASSWORD) {
+            console.log('Recieved post with correct password');
+            const fileName = createFilename(req.body.md);
+            const newUrlString = createUrl(req.body.md);
+            const urlResponse = createResponse(newUrlString);
+            console.log('Sending to Github');
+            await sendToGithub(octokit, fileName, req.body.md);
+            res.end(urlResponse);
+            console.log(`Sent response to client: ${urlResponse}`)
+        } else {
+            res.status(401);
+            res.end('401: Unauthorized');
+            console.log('Invalid password provided');
+        }
+    } catch (err) {
+        res.status(400);
+        res.end('400: API Error');
+        console.error(`Error: ${err}`);
+    }
+}
+
+export default handler;
