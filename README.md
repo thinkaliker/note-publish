@@ -5,18 +5,17 @@ I'm currently using it with [Hugo](https://gohugo.io) but I don't see why it als
 
 This can be run locally or anywhere that can run node.js + some dependencies (I picked Vercel in this instance).
 
+Skip to "Configuring notable.app" if you just want to use the instance I've set up.
 
 # Requirements
 - Get a github personal access token and add the repo permission
-- Configure `SAMPLE.env` and fill/replace with your desired setup
-  - `NOTABLE_PASSWORD`: the password you set in Notable (default is none, recommend changing it, I suggest something long and unguessable)
+- Configure `SAMPLE.env` and fill/replace with your desired setup - you will need these values later
   - `GITHUB_USER`: the username of the Github account
   - `GITHUB_REPO`: the name of the Github repository
   - `GITHUB_AUTH`: the Github Personal Access Token for the account
   - `GITHUB_PATH`: the path within the repo where the file should end up (content/blog is provided as an example)
   - `BLOG_URL`: the resulting published URL - this is only to provide Notable with the URL to copy to your clipboard. If you have a different blog setup, feel free to leave it as is, however you will have to retrieve the published URL by hand.
-- Rename `SAMPLE.env` to just `.env`
-- Files must contain a front matter with the following fields
+- Notable files must contain a front matter with the following fields at a minimum
   - date (in 2021-11-30T20:00:00-07:00 format)
   - slug (for blog url)
 
@@ -26,25 +25,27 @@ This can be run locally or anywhere that can run node.js + some dependencies (I 
 - `node index.js` to run locally
 - `vercel dev` if Vercel CLI is installed
 
-
 # Deploying to Vercel (optional)
 - Install Vercel CLI
 - Configure a new vercel project
-- Input the same environment variables fron SAMPLE.env into the build environment
 - `vercel` to deploy
-  - Advanced configuration: set up separate "Preview" and "Production" repositories that way you can test publishing without affecting the actual site (requires forking this repository)
-
 
 # Configuring notable.app
+- Go to [https://note-publish.thinkaliker.com/](https://note-publish.thinkaliker.com/)
+- Fill in all the fields with values from SAMPLE.env
+  - No data is sent from the webpage. For the paranoid, inspect the source, or disconnect from the internet.
+  - Note that the password is NOT ENCRYPTED, guard the password as well as your own Personal Access Token
+- Press Generate Configuration
+  - The configuration should be copied to your clipboard automatically
 - Open Notable settings (File > Preferences > Settings...)
-- Append the following to your global settings
+- Append the following to your global settings by pasting your clipboard
 
 ```json
   ...
   ...},
-  "sharing": {
-    "endpoint": "https://<your hosted/vercel url here>/api/post",
-    "password": "<your selected password here>",
+  "sharing":{
+    "endpoint": "https://note-publish.thinkaliker.com/post/https%3A%2F%2Fexample.com%2Fblog/octocat/my-website/content/blog",
+    "password": "<your generated password here>",
     "ttl": 86400
   }
   ...

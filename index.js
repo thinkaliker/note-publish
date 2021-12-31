@@ -13,11 +13,12 @@ app.get('/', (req, res) => {
     res.end('note-publish');
 });
 
-app.get('/api/post', (req, res) => {
+app.get('/api/post/*', (req, res) => {
     res.end('/api/post');
 });
 
-app.post('/api/post', (req, res) => {
+app.post('/api/post/*', (req, res) => {
+    console.log('express post');
     postApi(req, res);
 });
 

@@ -10,10 +10,10 @@ function createResponse(url) {
     return JSON.stringify(response);
 }
 
-function createUrl(contents) {
+function createUrl(blogUrl, contents) {
     const frontMatter = fm(contents);
     const slugString = frontMatter.attributes.slug;
-    const fileName = process.env.BLOG_URL + "/" + slugString;
+    const fileName = blogUrl + "/" + slugString;
     return fileName;
 }
 
@@ -26,11 +26,11 @@ function createFilename(contents) {
 }
 
 
-async function checkSHA(octokit, path) {
+async function checkSHA(username, repo, octokit, path) {
     try {
         const result = await octokit.rest.repos.getContent({
-            owner: process.env.GITHUB_USER,
-            repo: process.env.GITHUB_REPO,
+            owner: username,
+            repo: repo,
             path,
         });
 
@@ -43,23 +43,23 @@ async function checkSHA(octokit, path) {
     }
 }
 
-async function sendToGithub(octokit, filename, contents) {
-    const encodedContent = Base64.encode(contents);
-    const path = process.env.GITHUB_PATH + '/' + filename;
-    const sha = await checkSHA(octokit, path);
+async function sendToGithub(username, repo, location, octokit, filename, textContents) {
+    const encodedContent = Base64.encode(textContents);
+    const repoPath = location + '/' + filename;
+    const sha = await checkSHA(username, repo, octokit, repoPath);
     
     try {
         const res = await octokit.rest.repos.createOrUpdateFileContents({
-            owner: process.env.GITHUB_USER,
-            repo: process.env.GITHUB_REPO,
-            path: process.env.GITHUB_PATH + '/' + filename,
+            owner: username,
+            repo: repo,
+            path: repoPath,
             message: '🤖 Published via note-publish',
             content: encodedContent,
             sha
         });
         console.log(`GitHub returned ${res.status}, new commit ${res.data.commit.sha}`);
     } catch (err) {
-        console.error(err);
+        console.error(`Github returned ${err}`);
     }
 }
 
@@ -72,10 +72,18 @@ function runMiddleware(req, res, fn) {
         return resolve(result)
       })
     })
-  }
+}
 
 const handler = async (req, res) => {
-    const octokit = new ok.Octokit({ auth: process.env.GITHUB_AUTH });
+
+    console.log('URL parameters', req.query.website, req.query.username, req.query.repository, req.query.location);
+
+    const hexStr = Buffer.from(req.body.password, 'hex').toString();
+    const hexJson = JSON.parse(hexStr)
+   
+    const githubAuth = hexJson.pa_token;
+
+    const octokit = new ok.Octokit({ auth: githubAuth });
     const cors = Cors({
         methods: ['GET', 'POST']
     });
@@ -83,20 +91,13 @@ const handler = async (req, res) => {
     await runMiddleware(req, res, cors);
 
     try {
-        if (req.body['password'] === process.env.NOTABLE_PASSWORD) {
-            console.log('Recieved post with correct password');
-            const fileName = createFilename(req.body.md);
-            const newUrlString = createUrl(req.body.md);
-            const urlResponse = createResponse(newUrlString);
-            console.log('Sending to Github');
-            await sendToGithub(octokit, fileName, req.body.md);
-            res.end(urlResponse);
-            console.log(`Sent response to client: ${urlResponse}`)
-        } else {
-            res.status(401);
-            res.end('401: Unauthorized');
-            console.log('Invalid password provided');
-        }
+        const fileName = createFilename(req.body.md);
+        const newUrlString = createUrl(req.query.website, req.body.md);
+        const urlResponse = createResponse(newUrlString);
+        console.log('Sending to Github');
+        await sendToGithub(req.query.username, req.query.repository, req.query.location, octokit, fileName, req.body.md);
+        res.end(urlResponse);
+        console.log(`Sent response to client: ${urlResponse}`)
     } catch (err) {
         res.status(400);
         res.end('400: API Error');

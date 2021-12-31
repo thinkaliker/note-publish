@@ -1,9 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
     <head>
-        <title>note-publish</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>note-publish configuration generator</title>
+        <script>
+            function hashData(text) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(text);
+                const dataArray = Array.from(new Uint8Array(data));
+                const dataHex = dataArray.map(b => b.toString(16).padStart(2, '0')).join(''); 
+                return dataHex;
+            }
+
+            function generate() {
+                
+                const pa_token = String(document.getElementById('pa_token').value);
+                const gen_pass_obj = { "pa_token": pa_token };
+                const gen_pass_str = JSON.stringify(gen_pass_obj);
+                const password = hashData(gen_pass_str);
+
+                const blogUrl = document.getElementById('blog_url').value;
+                const username = document.getElementById('username').value;
+                const repository = document.getElementById('repository').value;
+                const destination = document.getElementById('destination').value;
+
+                const newUrl = 'https://' + window.location.hostname + '/post/' + encodeURIComponent(blogUrl) + '/' + username + '/' + repository + '/' + destination;
+
+                const config = {}
+                config.endpoint = newUrl;
+                config.password = password;
+                config.ttl = 86400;
+                const newConfig = '\"sharing\":' + JSON.stringify(config);
+
+                insertText(newConfig, 'result', 'copied');
+            }
+
+
+            function insertText(text, result, copied) {
+                document.getElementById(result).innerText = String(text);
+                navigator.clipboard.writeText(text);
+                document.getElementById(copied).innerText = "Copied to clipboard";
+            }
+        </script>
     </head>
     <body>
-        Hello!
+        <h1>note-publish configuration generator</h1>
+        <p>
+            No information is sent to the internet from this page. Text on this page is generated client side.
+            <br/>
+            Note that this password generator does <b>NOT</b> encrypt your password. Guard this password as well as your actual Personal Access Token.
+        </p>
+        <p>
+            <span>GitHub Personal Access Token</span>
+            <input type="password" id="pa_token">
+            <br/>
+            <span>Blog URL path (eg. https://example.com/blog)</span>
+            <input type="text" id="blog_url">
+            <br/>
+            <span>GitHub Username (eg. octocat)</span>
+            <input type="text" id="username">
+            <br/>
+            <span>GitHub Repository (eg. my-website)</span>
+            <input type="text" id="repository">
+            <br/>
+            <span>GitHub Repository Destination (eg. content/blog)</span>
+            <input type="text" id="destination">
+            <br/>
+            <button onClick="generate()">Generate Configuration</button>
+        </p>
+        <p>
+            <span>Configuration to add to settings (copy to Notable):</span>
+            <br/>
+            <span id="result" style="font-family: monospace;"></span>
+            <br/>
+            <span id="copied"></span>
+        </p>
+
     </body>
 </html>
