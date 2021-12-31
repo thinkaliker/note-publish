@@ -4,8 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>note-publish configuration generator</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" integrity="sha512-EZLkOqwILORob+p0BXZc+Vm3RgJBOe1Iq/0fiI7r/wJgzOFZMlsqTa29UEl6v6U6gsV4uIpsNZoV32YZqrCRCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script>
-            function hashData(text) {
+            function encodeData(text) {
                 const encoder = new TextEncoder();
                 const data = encoder.encode(text);
                 const dataArray = Array.from(new Uint8Array(data));
@@ -18,7 +19,7 @@
                 const pa_token = String(document.getElementById('pa_token').value);
                 const gen_pass_obj = { "pa_token": pa_token };
                 const gen_pass_str = JSON.stringify(gen_pass_obj);
-                const password = hashData(gen_pass_str);
+                const password = encodeData(gen_pass_str);
 
                 const blogUrl = document.getElementById('blog_url').value;
                 const username = document.getElementById('username').value;
@@ -47,9 +48,11 @@
     <body>
         <h1>note-publish configuration generator</h1>
         <p>
+            Read the <a href="https://github.com/thinkaliker/note-publish" target="_blank">GitHub README</a> for help using this tool.
+            <br/>
             No information is sent to the internet from this page. Text on this page is generated client side.
             <br/>
-            Note that this password generator does <b>NOT</b> encrypt your password. Guard this password as well as your actual Personal Access Token.
+            Note that the password generator does <b>NOT</b> encrypt your Personal Access Token (PAT). Guard this password as well as your actual PAT.
         </p>
         <p>
             <span>GitHub Personal Access Token</span>
